@@ -4,18 +4,26 @@ Created on Fri Jun 21 03:55:12 2024
 
 @author: ludon
 """
-
+import numpy as np
+import matplotlib.pyplot as plt
+import utils
+import numpy as np
+from models.SATNMBase import SATBase
+from qubosearcher import *
+from formula_creator import *
+import os
 class ChancellorSAT(SATBase):
+    '''copy from zelinski's paper'''
     def __init__(self, formula):
         super().__init__(formula)
-        self.auxiliary_vars = {}  # 存储辅助变量的字典
-        self.variable_clause_map = {}  # 存储变量和子句之间的关系
+        self.auxiliary_vars = {}
+        self.variable_clause_map = {}
 
     def create_qubo(self):
         for clause_index, clause in enumerate(self.formula):
-            aux_var = self.num_variables + clause_index + 1  # 辅助变量的索引
-            self.auxiliary_vars[clause_index] = aux_var  # 记录辅助变量
-            self.variable_clause_map[aux_var] = clause  # 记录辅助变量和子句的关系
+            aux_var = self.num_variables + clause_index + 1
+            self.auxiliary_vars[clause_index] = aux_var
+            self.variable_clause_map[aux_var] = clause
 
             if list(np.sign(clause)) == [1, 1, 1]:
                 self.add(clause[0], clause[0], -2)
@@ -93,7 +101,7 @@ def qubo_to_ising(Q):
             if i != j:
                 J[i, j] = Q[i, j] / 4.0
         h[i] = (np.sum(Q[i, :]) + np.sum(Q[:, i]) - 2 * Q[i, i]) / 4.0
-    return J, h
+    return -J, -h
 
 class nuesslein1:
 
@@ -276,7 +284,7 @@ def simulated_annealing(J, h, num_variables, variable_clause_map, max_iterations
         # Select a random group of spins to flip
 #         group_size = np.random.randint(1, num_variables // 2) * 2  # Ensure even number of spins
 #         flip_indices = np.random.choice(range(num_variables), size=group_size, replace=False)
-        flip_indices  = generate_even_random_numbers(num_variables, count=5)
+        flip_indices  = generate_even_random_numbers(num_variables, count=2)
         # Copy variables and auxiliary_vars for temporary flip
         variables_flipped = variables.copy()
         auxiliary_vars_flipped = auxiliary_vars.copy()
@@ -288,7 +296,8 @@ def simulated_annealing(J, h, num_variables, variable_clause_map, max_iterations
         delta_energy = energy_flipped - energy
 
         # Decide whether to accept the new state
-        if delta_energy < 0 or np.exp(-delta_energy / temperature) > np.random.rand():
+        print('delta_energy, {}'.format(delta_energy))
+        if delta_energy < 0 or np.exp(-delta_energy / temperature) > 50*np.random.rand():
             # Accept the flip
             variables = variables_flipped
             variable_states = best_variables == 1

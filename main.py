@@ -285,7 +285,7 @@ def metropolis_algorithm(J, h, num_variables, variable_clause_map, max_iteration
             delta_energy = energy_flipped - energy
 
             # Decide whether to accept the new state
-            if delta_energy < 0 or np.exp(-delta_energy / temperature) > np.random.rand():
+            if delta_energy > 0: #or np.exp(-delta_energy / temperature) < np.random.rand():
                 # Accept the flip
                 variables = variables_flipped
                 auxiliary_vars = auxiliary_vars_flipped
