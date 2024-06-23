@@ -101,7 +101,7 @@ def qubo_to_ising(Q):
             if i != j:
                 J[i, j] = Q[i, j] / 4.0
         h[i] = (np.sum(Q[i, :]) + np.sum(Q[:, i]) - 2 * Q[i, i]) / 4.0
-    return -J, -h
+    return J, h
 
 class nuesslein1:
 
